@@ -33,13 +33,14 @@ import {
  * (Disponíveis em: Definições do Projeto > As tuas aplicações > Web App)
  */
 const firebaseConfig = {
-    apiKey: "TEU_API_KEY_AQUI",
-    authDomain: "teu-projeto.firebaseapp.com",
-    projectId: "teu-projeto-id",
-    storageBucket: "teu-projeto.appspot.com",
-    messagingSenderId: "SEU_MESSAGING_SENDER_ID",
-    appId: "SEU_APP_ID"
-};
+    apiKey: "AIzaSyAYxT7-zYcy3WU5ufvDkOiK6SC2w_WQUGQ",
+    authDomain: "epbjc-requisi.firebaseapp.com",
+    projectId: "epbjc-requisi",
+    storageBucket: "epbjc-requisi.firebasestorage.app",
+    messagingSenderId: "667979002412",
+    appId: "1:667979002412:web:035bbcd766d8af8bc2d789",
+    measurementId: "G-VPW4XKXL9N"
+  };
 
 // Inicializar o Firebase
 const app = initializeApp(firebaseConfig);
