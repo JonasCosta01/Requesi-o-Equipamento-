@@ -52,7 +52,7 @@ const db = getFirestore(app);
 const microsoftProvider = new OAuthProvider('microsoft.com');
 // Opcional: Se precisares de forçar a escolha da conta institucional ou tenant específico:
  microsoftProvider.setCustomParameters({
-     tenant: "4334e4b0-48f4-4a76-ae54-cec847437a72on" // ou o teu Tenant ID do Azure
+     tenant: "4334e4b0-48f4-4a76-ae54-cec847437a72" // ou o teu Tenant ID do Azure
  });
 
 /**
