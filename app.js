@@ -32,6 +32,7 @@ import {
  * ATENÇÃO: Substitui estes dados pelos valores reais do teu projeto Firebase
  * (Disponíveis em: Definições do Projeto > As tuas aplicações > Web App)
  */
+
 const firebaseConfig = {
     apiKey: "AIzaSyAYxT7-zYcy3WU5ufvDkOiK6SC2w_WQUGQ",
     authDomain: "epbjc-requisi.firebaseapp.com",
@@ -42,7 +43,7 @@ const firebaseConfig = {
     measurementId: "G-VPW4XKXL9N"
   };
 
-// Inicializar o Firebase
+  // Inicializar o Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -50,9 +51,9 @@ const db = getFirestore(app);
 // Configurar o Provedor Microsoft (Azure AD)
 const microsoftProvider = new OAuthProvider('microsoft.com');
 // Opcional: Se precisares de forçar a escolha da conta institucional ou tenant específico:
-// microsoftProvider.setCustomParameters({
-//     tenant: "common" // ou o teu Tenant ID do Azure
-// });
+ microsoftProvider.setCustomParameters({
+     tenant: "comm4334e4b0-48f4-4a76-ae54-cec847437a72on" // ou o teu Tenant ID do Azure
+ });
 
 /**
  * =========================================================================
