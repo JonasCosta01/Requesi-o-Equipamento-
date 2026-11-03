@@ -30,9 +30,7 @@ import {
 
 /**
  * ATENÇÃO: Substitui estes dados pelos valores reais do teu projeto Firebase
- * (Disponíveis em: Definições do Projeto > As tuas aplicações > Web App)
  */
-
 const firebaseConfig = {
     apiKey: "AIzaSyAYxT7-zYcy3WU5ufvDkOiK6SC2w_WQUGQ",
     authDomain: "epbjc-requisi.firebaseapp.com",
@@ -41,17 +39,17 @@ const firebaseConfig = {
     messagingSenderId: "667979002412",
     appId: "1:667979002412:web:035bbcd766d8af8bc2d789",
     measurementId: "G-VPW4XKXL9N"
-  };
+};
 
-  // Inicializar o Firebase
+// Inicializar o Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Configuração correta do Provedor Microsoft
+// Configuração do Provedor Microsoft
 const microsoftProvider = new OAuthProvider('microsoft.com');
 microsoftProvider.setCustomParameters({
-    tenant: "4334e4b0-48f4-4a76-ae54-cec847437a72" // Apenas o ID limpo, sem "comm" ou "on"
+    tenant: "4334e4b0-48f4-4a76-ae54-cec847437a72"
 });
 
 /**
@@ -61,7 +59,7 @@ microsoftProvider.setCustomParameters({
  */
 const DatabaseService = {
     
-    // Verificar se o utilizador está na coleção 'authorizedUsers' (Lista Branca de 18 alunos/docentes)
+    // Verificar se o utilizador está na coleção 'authorizedUsers'
     async verificarAutorizacao(email) {
         if (!email) return false;
         try {
@@ -71,7 +69,6 @@ const DatabaseService = {
             
             if (userSnap.exists()) {
                 const dados = userSnap.data();
-                // Retorna verdadeiro se o documento existir e 'active' for true
                 return dados.active === true;
             }
             return false;
@@ -81,7 +78,7 @@ const DatabaseService = {
         }
     },
 
-    // Obter requisições (filtradas por UID do utilizador autenticado por razões de segurança)
+    // Obter requisições filtradas por UID
     async obterRequisicoes(userUid) {
         try {
             const q = query(
@@ -93,7 +90,6 @@ const DatabaseService = {
             querySnapshot.forEach((docSnap) => {
                 lista.push({ idDoc: docSnap.id, ...docSnap.data() });
             });
-            // Ordenar por data localmente se necessário
             return lista;
         } catch (error) {
             console.error("Erro ao obter requisições do Firestore:", error);
@@ -101,7 +97,7 @@ const DatabaseService = {
         }
     },
 
-    // Criar nova requisição associada ao UID do utilizador
+    // Criar nova requisição
     async criarRequisicao(novaReq) {
         try {
             const novaRef = doc(collection(db, "requisicoes"));
@@ -123,6 +119,7 @@ const DatabaseService = {
             await updateDoc(reqRef, { estado: novoEstado });
         } catch (error) {
             console.error("Erro ao atualizar estado:", error);
+            throw error;
         }
     },
 
@@ -132,11 +129,12 @@ const DatabaseService = {
             await deleteDoc(doc(db, "requisicoes", idDoc));
         } catch (error) {
             console.error("Erro ao eliminar requisição:", error);
+            throw error;
         }
     }
 };
 
-// Configurações globais da interface
+// Configuração da data mínima no formulário
 const dataNecessariaEl = document.getElementById('dataNecessaria');
 if (dataNecessariaEl) {
     dataNecessariaEl.min = new Date().toISOString().split("T")[0];
@@ -150,6 +148,7 @@ const appContainer = document.getElementById('appContainer');
 const form = document.getElementById('formRequisicao');
 const listaRequisicoesEl = document.getElementById('listaRequisicoes');
 const emptyStateEl = document.getElementById('emptyState');
+const filtroEstadoEl = document.getElementById('filtroEstado');
 
 /**
  * =========================================================================
@@ -158,18 +157,16 @@ const emptyStateEl = document.getElementById('emptyState');
  */
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Verificar whitelist no Firestore antes de permitir o acesso total
         const emailUser = user.email || user.providerData[0]?.email;
         const autorizado = await DatabaseService.verificarAutorizacao(emailUser);
 
         if (!autorizado) {
-            alert("Acesso negado: O seu email institucional não se encontra autorizado na lista branca (authorizedUsers).");
+            alert("Acesso negado: O seu email institucional não se encontra autorizado na lista branca.");
             await signOut(auth);
             mostrarLogin();
             return;
         }
 
-        // Calcular iniciais para o avatar
         const nomeCompleto = user.displayName || emailUser.split('@')[0];
         const partes = nomeCompleto.trim().split(" ");
         let iniciais = partes[0][0];
@@ -191,17 +188,14 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-/**
- * Função global chamada pelo botão HTML para iniciar o login com Microsoft Popup
- */
+// Login com Microsoft Popup
 window.fazerLoginMicrosoft = async function() {
     const btn = document.getElementById('btnLoginMS');
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> A autenticar na Microsoft...`;
     btn.disabled = true;
 
     try {
-        const result = await signInWithPopup(auth, microsoftProvider);
-        // O observador onAuthStateChanged tratará do resto automaticamente
+        await signInWithPopup(auth, microsoftProvider);
     } catch (error) {
         console.error("Erro na autenticação Microsoft:", error);
         alert("Erro ao iniciar sessão com a Microsoft: " + error.message);
@@ -209,9 +203,7 @@ window.fazerLoginMicrosoft = async function() {
     }
 };
 
-/**
- * Terminar Sessão
- */
+// Terminar Sessão
 window.fazerLogout = async function() {
     try {
         await signOut(auth);
@@ -242,21 +234,24 @@ async function inicializarApp() {
     if (loginScreen) loginScreen.classList.add('hidden');
     if (appContainer) appContainer.classList.remove('hidden');
 
-    // Atualizar interface do perfil
     document.getElementById('userName').innerText = utilizadorAtual.nome;
     document.getElementById('userEmail').innerText = utilizadorAtual.email;
     document.getElementById('userAvatar').innerText = utilizadorAtual.iniciais;
     document.getElementById('nome').value = utilizadorAtual.nome;
 
-    // Carregar requisições do Firestore pertencentes ao UID atual
     requisicoes = await DatabaseService.obterRequisicoes(utilizadorAtual.uid);
     renderizarRequisicoes();
     atualizarEstatisticas();
 }
 
-/**
- * Submissão de Nova Requisição para o Firestore
- */
+// Event Listeners Globais para UI
+if (filtroEstadoEl) {
+    filtroEstadoEl.addEventListener('change', () => {
+        renderizarRequisicoes();
+    });
+}
+
+// Submissão de Nova Requisição
 if (form) {
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -291,7 +286,8 @@ if (form) {
                 document.getElementById('dataNecessaria').min = new Date().toISOString().split("T")[0];
             }
         } catch (error) {
-            alert("Erro ao submeter requisição.");
+            console.error("Erro detalhado ao submeter:", error);
+            alert("Erro ao submeter requisição: " + error.message);
         } finally {
             btnSubmeter.disabled = false;
             btnSubmeter.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submeter Requisição`;
@@ -301,24 +297,31 @@ if (form) {
 
 // Funções globais ligadas à tabela
 window.alterarEstado = async function(idDoc, novoEstado) {
-    await DatabaseService.atualizarEstado(idDoc, novoEstado);
-    requisicoes = await DatabaseService.obterRequisicoes(utilizadorAtual.uid);
-    renderizarRequisicoes();
-    atualizarEstatisticas();
+    try {
+        await DatabaseService.atualizarEstado(idDoc, novoEstado);
+        requisicoes = await DatabaseService.obterRequisicoes(utilizadorAtual.uid);
+        renderizarRequisicoes();
+        atualizarEstatisticas();
+    } catch (error) {
+        alert("Erro ao atualizar o estado.");
+    }
 };
 
 window.apagarRequisicao = async function(idDoc) {
     if (confirm('Tem a certeza que pretende eliminar esta requisição?')) {
-        await DatabaseService.eliminarRequisicao(idDoc);
-        requisicoes = await DatabaseService.obterRequisicoes(utilizadorAtual.uid);
-        renderizarRequisicoes();
-        atualizarEstatisticas();
+        try {
+            await DatabaseService.eliminarRequisicao(idDoc);
+            requisicoes = await DatabaseService.obterRequisicoes(utilizadorAtual.uid);
+            renderizarRequisicoes();
+            atualizarEstatisticas();
+        } catch (error) {
+            alert("Erro ao eliminar a requisição.");
+        }
     }
 };
 
 window.renderizarRequisicoes = function() {
-    const filtroEl = document.getElementById('filtroEstado');
-    const filtro = filtroEl ? filtroEl.value : 'TODOS';
+    const filtro = filtroEstadoEl ? filtroEstadoEl.value : 'TODOS';
     if (!listaRequisicoesEl) return;
     
     listaRequisicoesEl.innerHTML = '';
