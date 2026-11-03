@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisição de Hardware - Portal Escolar</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col antialiased">
+
+    <!-- ========================================== -->
+    <!-- ECRÃ DE LOGIN (MICROSOFT INSTITUCIONAL)   -->
+    <!-- ========================================== -->
+    <div id="loginScreen" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-2xl border border-slate-100 text-center relative overflow-hidden transition-all duration-300">
+            <!-- Faixa Decorativa com Gradiente -->
+            <div class="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500"></div>
+
+            <!-- Logótipo / Ícone do Agrupamento -->
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-2xl mx-auto flex items-center justify-center text-2xl mb-4 shadow-inner">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <h2 class="text-2xl font-bold text-slate-900">Portal Escolar</h2>
+            <p class="text-sm text-slate-500 mt-1 mb-6">Sistema de Requisição & Gestão de Hardware</p>
+
+            <!-- Card Informativo de Conexão -->
+            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 mb-6 text-left text-xs text-slate-600 flex items-start gap-3">
+                <i class="fa-solid fa-shield-halved text-indigo-500 text-base mt-0.5"></i>
+                <div>
+                    <span class="font-semibold text-slate-700 block">Autenticação Única (SSO)</span>
+                    Acesso seguro através do domínio institucional da escola.
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Botão Oficial de Login com Microsoft -->
+                <button id="btnLoginMS" onclick="fazerLoginMicrosoft()" class="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-700 font-semibold py-3.5 px-4 rounded-xl border border-slate-300 shadow-sm hover:shadow transition duration-200 group">
+                    <svg class="w-5 h-5 transition-transform group-hover:scale-105" viewBox="0 0 23 23">
+                        <path fill="#f35325" d="M1 1h10v10H1z"/>
+                        <path fill="#81bc06" d="M12 1h10v10H1z"/>
+                        <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                        <path fill="#ffba08" d="M12 12h10v10H1z"/>
+                    </svg>
+                    <span>Entrar com conta Microsoft</span>
+                </button>
+                
+                <p class="text-[11px] text-slate-400">
+                    Utiliza o teu email <span class="font-medium text-slate-500">@escola.edu.pt</span> ou <span class="font-medium text-slate-500">@agrupamento.pt</span>
+                </p>
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                <span>Suporte Informático</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> Servidor Ativo</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- PAINEL PRINCIPAL DA APLICAÇÃO              -->
+    <!-- ========================================== -->
+    <div id="appContainer" class="hidden flex-1 flex flex-col">
+        
+        <!-- Cabeçalho Principal -->
+        <header class="bg-indigo-600 text-white shadow-md sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-white/10 p-2.5 rounded-xl border border-white/10 shadow-inner">
+                        <i class="fa-solid fa-laptop-code text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold tracking-tight">Gestão de Hardware Escolar</h1>
+                        <p class="text-indigo-200 text-xs">Requisição de equipamentos informáticos e audiovisuais</p>
+                    </div>
+                </div>
+
+                <!-- Perfil do Utilizador Autenticado -->
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <div class="flex items-center gap-3 bg-indigo-700/60 hover:bg-indigo-700/80 transition px-3.5 py-1.5 rounded-xl border border-indigo-500/30">
+                        <div id="userAvatar" class="w-8 h-8 bg-white text-indigo-700 font-bold rounded-full flex items-center justify-center text-xs shadow">
+                            --
+                        </div>
+                        <div class="text-left">
+                            <p id="userName" class="text-xs font-semibold leading-tight text-white">--</p>
+                            <p id="userEmail" class="text-[10px] text-indigo-200 leading-tight">--</p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="fazerLogout()" title="Terminar Sessão" class="bg-indigo-700 hover:bg-rose-600 text-white p-2.5 rounded-xl transition duration-200 text-xs flex items-center gap-2 border border-indigo-500/30">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span class="hidden sm:inline font-medium">Sair</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Conteúdo Principal -->
+        <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full space-y-8">
+
+            <!-- Cartões de Estatísticas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pedidos</p>
+                        <h3 id="statTotal" class="text-3xl font-extrabold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="bg-indigo-50 text-indigo-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-clipboard-list"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pendentes</p>
+                        <h3 id="statPendentes" class="text-3xl font-extrabold text-amber-600 mt-1">0</h3>
+                    </div>
+                    <div class="bg-amber-50 text-amber-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-hourglass-half"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Aprovados / Entregues</p>
+                        <h3 id="statAprovados" class="text-3xl font-extrabold text-emerald-600 mt-1">0</h3>
+                    </div>
+                    <div class="bg-emerald-50 text-emerald-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-circle-check"></i></div>
+                </div>
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Urgentes</p>
+                        <h3 id="statUrgentes" class="text-3xl font-extrabold text-rose-600 mt-1">0</h3>
+                    </div>
+                    <div class="bg-rose-50 text-rose-600 w-12 h-12 rounded-xl flex items-center justify-center text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                </div>
+            </div>
+
+            <!-- Layout Principal: Formulário + Tabela -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Coluna Esquerda: Formulário de Pedido -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 h-fit space-y-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-plus text-indigo-600"></i> Nova Requisição
+                        </h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Preenche os dados para submeter um novo pedido</p>
+                    </div>
+                    
+                    <form id="formRequisicao" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Requerente Autenticado</label>
+                            <div class="relative">
+                                <input type="text" id="nome" required class="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-sm focus:outline-none cursor-not-allowed font-medium" readonly>
+                                <i class="fa-solid fa-user-lock text-slate-400 text-xs absolute left-3.5 top-3.5"></i>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Departamento / Disciplina</label>
+                            <select id="departamento" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white text-slate-700">
+                                <option value="">Selecionar departamento...</option>
+                                <option value="Informática & Tecnologias">Informática & Tecnologias</option>
+                                <option value="Matemática & Ciências">Matemática & Ciências</option>
+                                <option value="Línguas e Ciências Sociais">Línguas e Ciências Sociais</option>
+                                <option value="Educação Física & Desporto">Educação Física & Desporto</option>
+                                <option value="Artes e Expressões">Artes e Expressões</option>
+                                <option value="Secretaria / Administração">Secretaria / Administração</option>
+                                <option value="Biblioteca / CRE">Biblioteca / CRE</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Tipo de Hardware</label>
+                            <select id="hardware" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white text-slate-700">
+                                <option value="">Selecionar equipamento...</option>
+                                <option value="Portátil / Laptop Docente">Portátil / Laptop Docente</option>
+                                <option value="Projetor / Videoprojetor Portátil">Projetor / Videoprojetor Portátil</option>
+                                <option value="Kit Tablets / iPads (Turma)">Kit Tablets / iPads (Turma)</option>
+                                <option value="Coluna de Som / Microfone">Coluna de Som / Microfone</option>
+                                <option value="Cabo HDMI / Adaptador DisplayPort">Cabo HDMI / Adaptador DisplayPort</option>
+                                <option value="Câmara de Vídeo / Tripé">Câmara de Vídeo / Tripé</option>
+                                <option value="Outro Acessório">Outro Acessório</option>
+                            </select>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Urgência</label>
+                                <select id="urgencia" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm bg-white text-slate-700">
+                                    <option value="Normal">Normal</option>
+                                    <option value="Urgente">Urgente</option>
+                                    <option value="Crítica">Crítica</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Data Necessária</label>
+                                <input type="date" id="dataNecessaria" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-slate-700">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">Justificação do Pedido</label>
+                            <textarea id="justificacao" rows="3" required placeholder="Ex: Aula prática de robótica com a turma 10º B..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm text-slate-700"></textarea>
+                        </div>
+
+                        <button type="submit" id="btnSubmeter" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold py-3 px-4 rounded-xl transition duration-200 text-sm shadow-sm flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Submeter Requisição
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Coluna Direita: Tabela de Gestão de Requisições -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800">Histórico de Requisições</h2>
+                                <p class="text-xs text-slate-400">Listagem geral dos pedidos submetidos no sistema</p>
+                            </div>
+                            <!-- Filtro de Estados -->
+                            <div class="flex items-center gap-2 w-full sm:w-auto">
+                                <label class="text-xs font-semibold text-slate-500 whitespace-nowrap">Filtrar por:</label>
+                                <select id="filtroEstado" onchange="renderizarRequisicoes()" class="px-3.5 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium text-slate-700">
+                                    <option value="TODOS">Todos os Estados</option>
+                                    <option value="Pendente">Pendentes</option>
+                                    <option value="Aprovado">Aprovados</option>
+                                    <option value="Entregue">Entregues</option>
+                                    <option value="Rejeitado">Rejeitados</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tabela Responsiva -->
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-100 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                                        <th class="py-3.5 px-3">Requerente</th>
+                                        <th class="py-3.5 px-3">Equipamento</th>
+                                        <th class="py-3.5 px-3">Data / Urgência</th>
+                                        <th class="py-3.5 px-3">Estado</th>
+                                        <th class="py-3.5 px-3 text-right">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listaRequisicoes" class="divide-y divide-slate-100 text-sm">
+                                    <!-- Preenchido Dinamicamente por JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Ecrã Vazio -->
+                        <div id="emptyState" class="hidden text-center py-16">
+                            <div class="w-16 h-16 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto text-2xl mb-3 border border-slate-100">
+                                <i class="fa-solid fa-inbox"></i>
+                            </div>
+                            <p class="text-slate-600 font-medium text-sm">Nenhum pedido encontrado</p>
+                            <p class="text-slate-400 text-xs mt-1">Não existem requisições para o filtro selecionado.</p>
+                        </div>
+                    </div>
+
+                    <!-- Mensagem Informativa de Integração DB -->
+                    <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+                        <span class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-database text-indigo-500"></i>
+                            <span>Suporte API / Base de Dados Pronto</span>
+                        </span>
+                        <span class="text-[11px] bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md font-mono">v1.2.0</span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- LOGICA DA APLICAÇÃO (JAVASCRIPT)           -->
+    <!-- ========================================== -->
+    <script>
+        /**
+         * =========================================================================
+         *  CAMADA DE BASE DE DADOS / API SERVICE (PREPARADO PARA BACKEND)
+         * =========================================================================
+         *  Para ligar a tua BD real (PHP, Node.js, Firebase, Python/Flask, etc.):
+         *  Substitui os métodos do 'DatabaseService' por chamadas 'fetch()' ou 'axios'.
+         */
+        const DatabaseService = {
+            // Obter todas as requisições da BD
+            async obterRequisicoes() {
+                // EXEMPLO COM FETCH PARA O TEU BACKEND:
+                // const res = await fetch('/api/requisicoes');
+                // return await res.json();
+                
+                // Fallback para localStorage
+                return JSON.parse(localStorage.getItem('requisicoes_hardware')) || [];
+            },
+
+            // Guardar uma nova requisição na BD
+            async criarRequisicao(novaReq) {
+                // EXEMPLO COM FETCH PARA O TEU BACKEND:
+                // const res = await fetch('/api/requisicoes', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify(novaReq)
+                // });
+                // return await res.json();
+
+                let lista = await this.obterRequisicoes();
+                lista.unshift(novaReq);
+                localStorage.setItem('requisicoes_hardware', JSON.stringify(lista));
+                return novaReq;
+            },
+
+            // Atualizar estado na BD
+            async atualizarEstado(id, novoEstado) {
+                // EXEMPLO COM FETCH PARA O TEU BACKEND:
+                // await fetch(`/api/requisicoes/${id}/estado`, {
+                //     method: 'PATCH',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ estado: novoEstado })
+                // });
+
+                let lista = await this.obterRequisicoes();
+                lista = lista.map(item => item.id === id ? { ...item, estado: novoEstado } : item);
+                localStorage.setItem('requisicoes_hardware', JSON.stringify(lista));
+            },
+
+            // Eliminar requisição na BD
+            async eliminarRequisicao(id) {
+                // EXEMPLO COM FETCH PARA O TEU BACKEND:
+                // await fetch(`/api/requisicoes/${id}`, { method: 'DELETE' });
+
+                let lista = await this.obterRequisicoes();
+                lista = lista.filter(item => item.id !== id);
+                localStorage.setItem('requisicoes_hardware', JSON.stringify(lista));
+            }
+        };
+
+        // Configurações Globais
+        document.getElementById('dataNecessaria').min = new Date().toISOString().split("T")[0];
+
+        let utilizadorAtual = JSON.parse(localStorage.getItem('user_microsoft')) || null;
+        let requisicoes = [];
+
+        const loginScreen = document.getElementById('loginScreen');
+        const appContainer = document.getElementById('appContainer');
+        const form = document.getElementById('formRequisicao');
+        const listaRequisicoesEl = document.getElementById('listaRequisicoes');
+        const emptyStateEl = document.getElementById('emptyState');
+
+        // Inicialização ao carregar
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (utilizadorAtual) {
+                await inicializarApp();
+            } else {
+                mostrarLogin();
+            }
+        });
+
+        /**
+         * Autenticação Microsoft (Pronta para MSAL.js / Entra ID)
+         */
+        async function fazerLoginMicrosoft() {
+            const btn = document.getElementById('btnLoginMS');
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> A autenticar na Microsoft...`;
+            btn.disabled = true;
+
+            try {
+                /* 
+                 * NOTA PARA CONEXÃO REAL À MICROSOFT (MSAL.js / Azure Active Directory):
+                 * 
+                 * const msalConfig = { auth: { clientId: "TEU_CLIENT_ID_AZURE", authority: "https://login.microsoftonline.com/TEU_TENANT_ID" } };
+                 * const msalInstance = new msal.PublicClientApplication(msalConfig);
+                 * const loginResponse = await msalInstance.loginPopup({ scopes: ["user.read"] });
+                 * const user = loginResponse.account;
+                 */
+
+                // Entrada Dinâmica para Integração/Testes (Solicita dados do utilizador real)
+                const nomeInput = prompt("Introduza o seu Nome Completo (SSO Microsoft):", "Prof. João Silva");
+                const emailInput = prompt("Introduza o seu Email Institucional:", "joao.silva@escola.edu.pt");
+
+                if (!nomeInput || !emailInput) {
+                    mostrarLogin();
+                    return;
+                }
+
+                const partes = nomeInput.trim().split(" ");
+                let iniciais = partes[0][0];
+                if (partes.length > 1) {
+                    iniciais += partes[partes.length - 1][0];
+                }
+
+                utilizadorAtual = {
+                    nome: nomeInput,
+                    email: emailInput,
+                    iniciais: iniciais.toUpperCase()
+                };
+
+                localStorage.setItem('user_microsoft', JSON.stringify(utilizadorAtual));
+                await inicializarApp();
+
+            } catch (err) {
+                console.error("Erro na autenticação:", err);
+                mostrarLogin();
+            }
+        }
+
+        function fazerLogout() {
+            localStorage.removeItem('user_microsoft');
+            utilizadorAtual = null;
+            mostrarLogin();
+        }
+
+        function mostrarLogin() {
+            loginScreen.classList.remove('hidden');
+            appContainer.classList.add('hidden');
+            const btn = document.getElementById('btnLoginMS');
+            btn.innerHTML = `
+                <svg class="w-5 h-5" viewBox="0 0 23 23">
+                    <path fill="#f35325" d="M1 1h10v10H1z"/>
+                    <path fill="#81bc06" d="M12 1h10v10H1z"/>
+                    <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+                    <path fill="#ffba08" d="M12 12h10v10H1z"/>
+                </svg>
+                <span>Entrar com conta Microsoft</span>
+            `;
+            btn.disabled = false;
+        }
+
+        async function inicializarApp() {
+            loginScreen.classList.add('hidden');
+            appContainer.classList.remove('hidden');
+
+            // Atualizar interface do perfil
+            document.getElementById('userName').innerText = utilizadorAtual.nome;
+            document.getElementById('userEmail').innerText = utilizadorAtual.email;
+            document.getElementById('userAvatar').innerText = utilizadorAtual.iniciais;
+            document.getElementById('nome').value = utilizadorAtual.nome;
+
+            // Carregar requisições do serviço de dados
+            requisicoes = await DatabaseService.obterRequisicoes();
+            renderizarRequisicoes();
+            atualizarEstatisticas();
+        }
+
+        // Submissão do Formulário
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const btnSubmeter = document.getElementById('btnSubmeter');
+            btnSubmeter.disabled = true;
+            btnSubmeter.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> A guardar...`;
+
+            const novaRequisicao = {
+                id: Date.now(),
+                nome: utilizadorAtual.nome,
+                email: utilizadorAtual.email,
+                departamento: document.getElementById('departamento').value,
+                hardware: document.getElementById('hardware').value,
+                urgencia: document.getElementById('urgencia').value,
+                dataNecessaria: document.getElementById('dataNecessaria').value,
+                justificacao: document.getElementById('justificacao').value,
+                estado: 'Pendente',
+                dataRegisto: new Date().toLocaleDateString('pt-PT')
+            };
+
+            await DatabaseService.criarRequisicao(novaRequisicao);
+            requisicoes = await DatabaseService.obterRequisicoes();
+
+            renderizarRequisicoes();
+            atualizarEstatisticas();
+
+            form.reset();
+            document.getElementById('nome').value = utilizadorAtual.nome;
+            document.getElementById('dataNecessaria').min = new Date().toISOString().split("T")[0];
+
+            btnSubmeter.disabled = false;
+            btnSubmeter.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Submeter Requisição`;
+        });
+
+        // Alterar estado de um pedido
+        async function alterarEstado(id, novoEstado) {
+            await DatabaseService.atualizarEstado(id, novoEstado);
+            requisicoes = await DatabaseService.obterRequisicoes();
+            renderizarRequisicoes();
+            atualizarEstatisticas();
+        }
+
+        // Eliminar pedido
+        async function apagarRequisicao(id) {
+            if (confirm('Tem a certeza que pretende eliminar esta requisição?')) {
+                await DatabaseService.eliminarRequisicao(id);
+                requisicoes = await DatabaseService.obterRequisicoes();
+                renderizarRequisicoes();
+                atualizarEstatisticas();
+            }
+        }
+
+        // Renderização da Tabela de Pedidos
+        function renderizarRequisicoes() {
+            const filtro = document.getElementById('filtroEstado').value;
+            listaRequisicoesEl.innerHTML = '';
+
+            const requisicoesFiltradas = requisicoes.filter(req => {
+                if (filtro === 'TODOS') return true;
+                return req.estado === filtro;
+            });
+
+            if (requisicoesFiltradas.length === 0) {
+                emptyStateEl.classList.remove('hidden');
+                return;
+            } else {
+                emptyStateEl.classList.add('hidden');
+            }
+
+            requisicoesFiltradas.forEach(req => {
+                let badgeStyle = '';
+                if (req.estado === 'Pendente') badgeStyle = 'bg-amber-50 text-amber-700 border-amber-200/80';
+                else if (req.estado === 'Aprovado') badgeStyle = 'bg-blue-50 text-blue-700 border-blue-200/80';
+                else if (req.estado === 'Entregue') badgeStyle = 'bg-emerald-50 text-emerald-700 border-emerald-200/80';
+                else if (req.estado === 'Rejeitado') badgeStyle = 'bg-rose-50 text-rose-700 border-rose-200/80';
+
+                let urgenciaBadge = '';
+                if (req.urgencia === 'Urgente') urgenciaBadge = '<span class="text-[11px] text-amber-600 font-semibold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">Urgente</span>';
+                if (req.urgencia === 'Crítica') urgenciaBadge = '<span class="text-[11px] text-rose-600 font-semibold bg-rose-50 px-1.5 py-0.5 rounded border border-rose-200">Crítica</span>';
+
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-50/80 transition duration-150';
+                tr.innerHTML = `
+                    <td class="py-3.5 px-3">
+                        <div class="font-semibold text-slate-800">${req.nome}</div>
+                        <div class="text-xs text-slate-400">${req.departamento}</div>
+                    </td>
+                    <td class="py-3.5 px-3">
+                        <div class="font-medium text-slate-700">${req.hardware}</div>
+                        <div class="text-xs text-slate-400 truncate max-w-xs" title="${req.justificacao}">"${req.justificacao}"</div>
+                    </td>
+                    <td class="py-3.5 px-3">
+                        <div class="text-xs font-medium text-slate-700 flex items-center gap-1.5">${req.dataNecessaria} ${urgenciaBadge}</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5">Pedido a ${req.dataRegisto}</div>
+                    </td>
+                    <td class="py-3.5 px-3">
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${badgeStyle}">
+                            ${req.estado}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-3 text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <select onchange="alterarEstado(${req.id}, this.value)" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+                                <option value="" disabled selected>Alterar...</option>
+                                <option value="Pendente">Pendente</option>
+                                <option value="Aprovado">Aprovado</option>
+                                <option value="Entregue">Entregue</option>
+                                <option value="Rejeitado">Rejeitado</option>
+                            </select>
+                            <button onclick="apagarRequisicao(${req.id})" title="Eliminar" class="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition duration-150">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                listaRequisicoesEl.appendChild(tr);
+            });
+        }
+
+        // Atualização de Estatísticas
+        function atualizarEstatisticas() {
