@@ -48,12 +48,11 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Configurar o Provedor Microsoft (Azure AD)
+// Configuração correta do Provedor Microsoft
 const microsoftProvider = new OAuthProvider('microsoft.com');
-// Opcional: Se precisares de forçar a escolha da conta institucional ou tenant específico:
- microsoftProvider.setCustomParameters({
-     tenant: "4334e4b0-48f4-4a76-ae54-cec847437a72" // ou o teu Tenant ID do Azure
- });
+microsoftProvider.setCustomParameters({
+    tenant: "4334e4b0-48f4-4a76-ae54-cec847437a72" // Apenas o ID limpo, sem "comm" ou "on"
+});
 
 /**
  * =========================================================================
