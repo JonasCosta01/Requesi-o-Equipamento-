@@ -31,16 +31,16 @@ import {
 /**
  * ATENÇÃO: Substitui estes dados pelos valores reais do teu projeto Firebase
  */
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyAYxT7-zYcy3WU5ufvDkOiK6SC2w_WQUGQ",
-    authDomain: "epbjc-requisi.firebaseapp.com",
-    projectId: "epbjc-requisi",
-    storageBucket: "epbjc-requisi.firebasestorage.app",
-    messagingSenderId: "667979002412",
-    appId: "1:667979002412:web:035bbcd766d8af8bc2d789",
-    measurementId: "G-VPW4XKXL9N"
+  apiKey: "AIzaSyCtGfDAwWE9lBJ0kUNwHxCPI37Q94jm_7M",
+  authDomain: "reqequip.firebaseapp.com",
+  projectId: "reqequip",
+  storageBucket: "reqequip.firebasestorage.app",
+  messagingSenderId: "33294175495",
+  appId: "1:33294175495:web:aeecf96335c1b9c21089a2",
+  measurementId: "G-95CQN6S3Q0"
 };
-
 // Inicializar o Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
